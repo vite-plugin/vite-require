@@ -68,7 +68,7 @@ function expressionToGlob(node: AcornNode): string {
  * 
  * @see https://github.com/rollup/plugins/blob/master/packages/dynamic-import-vars/src/dynamic-import-to-glob.js  
  */
- export async function dynamicImportToGlob(
+export async function dynamicImportToGlob(
   node: AcornNode,
   sourceString: string,
   /**

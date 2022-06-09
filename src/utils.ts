@@ -1,4 +1,4 @@
-import {type AcornNode} from './types'
+import { type AcornNode } from './types'
 
 // ------------------------------------------------- RegExp
 
@@ -21,7 +21,6 @@ export const JS_EXTENSIONS = [
   '.tsx',
   '.cjs'
 ]
-
 export const KNOWN_SFC_EXTENSIONS = [
   '.vue',
   '.svelte',
@@ -33,7 +32,7 @@ export function cleanUrl(url: string): string {
   return url.replace(hashRE, '').replace(queryRE, '')
 }
 
-export function isCommonjs(code: string): boolean {
+export function isCommonjs(code: string) {
   // Avoid matching the content of the comment
   code = code
     .replace(multilineCommentsRE, '')

@@ -29,7 +29,7 @@ export interface Analyzed {
  * `require` statement analyzer  
  * require 语法分析器  
  */
- export function analyze(ast: AcornNode, code: string): Analyzed {
+export function analyze(ast: AcornNode, code: string): Analyzed {
   const analyzed: Analyzed = {
     ast,
     code,

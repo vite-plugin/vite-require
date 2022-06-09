@@ -20,16 +20,17 @@ export interface Resolved {
 }
 
 export class Resolve {
+
   constructor(
     private config: ResolvedConfig,
-    private resolve = config.createResolver
-  ) {}
+    private resolve = config.createResolver(),
+  ) { }
 
   /**
    * Resolve the relative path of alias or bare(module)  
    * 解析 alias 或 bare(裸模块) 的相对路径  
    */
-   public async tryResolve(importee: string, importer: string): Promise<Resolved | undefined> {
+  public async tryResolve(importee: string, importer: string): Promise<Resolved | undefined> {
     return await this.tryResolveAlias(importee, importer) || this.tryResolveBare(importee, importer)
   }
 
