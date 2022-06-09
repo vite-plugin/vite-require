@@ -43,10 +43,10 @@ export class Resolve {
     if (!resolvedId) return
 
     const alias = this.config.resolve.alias.find(
-      alias => alias.find instanceof RegExp
-        ? alias.find.test(impt)
+      a => a.find instanceof RegExp
+        ? a.find.test(impt)
         // https://github.com/rollup/plugins/blob/8fadc64c679643569239509041a24a9516baf340/packages/alias/src/index.ts#L16
-        : impt.startsWith(alias.find + '/')
+        : impt.startsWith(a.find + '/')
     )
     if (!alias) return
 

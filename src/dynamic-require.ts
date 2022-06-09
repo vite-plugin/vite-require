@@ -27,7 +27,7 @@ import { MagicString } from './utils'
  */
 
 export class DynamicRequire {
-  private EXT = '.extensions'
+  private EXT = '.extension'
 
   constructor(
     private options: Options,
@@ -57,6 +57,12 @@ export class DynamicRequire {
           node.arguments[0],
           code.slice(node.start, node.end),
           async (_glob) => {
+
+            // It's relative or absolute path
+            if (/^[\.\/]/.test(_glob)) {
+              return
+            }
+
             resolved = await this.resolve.tryResolve(_glob, importer)
             if (!resolved) return
 
