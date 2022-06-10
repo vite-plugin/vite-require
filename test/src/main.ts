@@ -1,3 +1,7 @@
+const foo_foo = require('./foo/foo')
+const { msg: baz_msg } = require('@/foo/baz')
+const bar_bar_msg = require('@/foo/bar/bar').msg
+
 const app = document.querySelector<HTMLDivElement>('#app')!
 
 app.innerHTML = `
@@ -14,5 +18,8 @@ function loadAssets(a: string) {
   return require(`@/assets/${a}`)
 }
 
+console.log(foo_foo)
+console.log(baz_msg)
+console.log(bar_bar_msg)
 console.log(loadFile('foo').msg)
 console.log(loadAssets('vite.svg'))
