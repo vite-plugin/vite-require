@@ -169,29 +169,3 @@ function tryFixGlobSlash(glob: string): string {
 function toDepthGlob(glob: string): string {
   return glob.replace(/^(.*)\/\*(?!\*)/, '$1/**/*')
 }
-
-function listImporteeMappings(
-  extensions: string[],
-  importeeList: string[],
-  tryIndex: boolean,
-) {
-  return importeeList.reduce((memo, importee, idx) => {
-    const list = [importee]
-
-    if (tryIndex) {
-      const ext = extensions.find(ext => importee.endsWith(ext))
-      const list = [
-        // foo/index
-        importee.replace(ext, ''),
-        // foo/index.js
-        importee,
-      ]
-      if (importee.endsWith('index' + ext)) {
-        // foo
-        list.unshift(importee.replace('/index' + ext, ''))
-      }
-    }
-
-    return Object.assign(memo, { [importee]: list })
-  }, {} as Record</* localFilename */string, /* Array<possible importee> */string[]>)
-}
