@@ -48,7 +48,7 @@ export class DynamicRequire {
       const {
         node,
         ancestors,
-        isDynamicId,
+        dynamic,
         topScopeNode,
       } = statement
       counter++
@@ -59,7 +59,9 @@ export class DynamicRequire {
       const requireIdNode = node.arguments[0]
       if (!requireIdNode) continue // Not value - require()
       if (requireIdNode.type === 'Literal') {
-        requireId = requireId = requireIdNode.value
+        requireId = requireIdNode.value
+      } else if (dynamic === 'dynamic-like') {
+        requireId = requireIdNode.quasis[0].value.raw
       }
 
       if (!requireId && topScopeNode) {
@@ -145,7 +147,7 @@ export class DynamicRequire {
           default:
             throw new Error(`Unknown TopScopeType: ${topScopeNode}`)
         }
-      } else if (isDynamicId) {
+      } else if (dynamic === 'dynamic') {
         let resolved: Resolved
         let glob = await dynamicImportToGlob(
           // `require` should have only one parameter
