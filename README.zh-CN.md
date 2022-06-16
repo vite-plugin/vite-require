@@ -7,6 +7,8 @@
 
 [English](https://github.com/vite-plugin/vite-require#readme) | 简体中文
 
+✅ dynamic-require `require('./foo/' + bar)`  
+
 ## 安装
 
 ```bash

@@ -7,6 +7,8 @@ Like Webpack's require
 
 English | [简体中文](https://github.com/vite-plugin/vite-require/blob/main/README.zh-CN.md)
 
+✅ dynamic-require `require('./foo/' + bar)`  
+
 ## Install
 
 ```bash
