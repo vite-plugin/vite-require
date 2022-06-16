@@ -18,7 +18,7 @@ export interface Options {
   extensions?: string[]
   filter?: (id: string) => false | void
   /**
-   * This option will change `./*` to `./** /*`
+   * When use the dynamic-require, this option will change `./*` to `./** /*`
    * @default true
    */
   depth?: boolean
