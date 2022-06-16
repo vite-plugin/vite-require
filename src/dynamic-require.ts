@@ -4,7 +4,7 @@ import { type ResolvedConfig } from 'vite'
 import { TopScopeType, type Analyzed } from './analyze'
 import { type Resolved, Resolve } from './resolve'
 import { type Options } from './index'
-import { dynamicImportToGlob } from './dynamic-import-to-glob'
+import { dynamicImportToGlob } from 'vite-plugin-dynamic-import'
 import { MagicString, builtins } from './utils'
 import { type AcornNode } from './types'
 
