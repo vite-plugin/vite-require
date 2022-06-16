@@ -5,7 +5,7 @@ import { TopScopeType, type Analyzed } from './analyze'
 import { type Resolved, Resolve } from './resolve'
 import { type Options } from './index'
 import { dynamicImportToGlob } from './dynamic-import-to-glob'
-import { MagicString } from './utils'
+import { MagicString, builtins } from './utils'
 import { type AcornNode } from './types'
 
 /**
@@ -63,6 +63,8 @@ export class DynamicRequire {
       } else if (dynamic === 'dynamic-like') {
         requireId = requireIdNode.quasis[0].value.raw
       }
+
+      if (builtins.includes(requireId)) continue
 
       if (!requireId && topScopeNode) {
         const codeSnippets = analyzed.code.slice(node.start, node.end)
