@@ -7,6 +7,8 @@ import {
   cleanUrl,
   isCommonjs,
   JS_EXTENSIONS,
+  KNOWN_ASSET_TYPES,
+  KNOWN_CSS_TYPES,
   KNOWN_SFC_EXTENSIONS,
 } from './utils'
 import { analyze } from './analyze'
@@ -32,7 +34,10 @@ export interface Options {
 }
 
 export function viteRequire(options: Options = {}): Plugin {
-  const extensions = JS_EXTENSIONS.concat(KNOWN_SFC_EXTENSIONS)
+  const extensions = JS_EXTENSIONS
+    .concat(KNOWN_SFC_EXTENSIONS)
+    .concat(KNOWN_ASSET_TYPES)
+    .concat(KNOWN_CSS_TYPES)
   let config: ResolvedConfig
   let dynamicRequire: DynamicRequire
 
