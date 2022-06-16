@@ -12,16 +12,7 @@ import {
   KNOWN_SFC_EXTENSIONS,
 } from './utils'
 import { analyze } from './analyze'
-import { Resolve } from './resolve'
 import { DynamicRequire } from './dynamic-require'
-import { dynamicImportToGlob } from './dynamic-import-to-glob'
-
-export {
-  analyze,
-  Resolve,
-  DynamicRequire,
-  dynamicImportToGlob,
-}
 
 export interface Options {
   extensions?: string[]
