@@ -7,32 +7,28 @@ import {
   cleanUrl,
   isCommonjs,
   JS_EXTENSIONS,
+  KNOWN_ASSET_TYPES,
+  KNOWN_CSS_TYPES,
   KNOWN_SFC_EXTENSIONS,
 } from './utils'
 import { analyze } from './analyze'
-import { Resolve } from './resolve'
 import { DynamicRequire } from './dynamic-require'
-import { dynamicImportToGlob } from './dynamic-import-to-glob'
-
-export {
-  analyze,
-  Resolve,
-  DynamicRequire,
-  dynamicImportToGlob,
-}
 
 export interface Options {
   extensions?: string[]
   filter?: (id: string) => false | void
   /**
-   * This option will change `./*` to `./** /*`
+   * When use the dynamic-require, this option will change `./*` to `./** /*`
    * @default true
    */
   depth?: boolean
 }
 
 export function viteRequire(options: Options = {}): Plugin {
-  const extensions = JS_EXTENSIONS.concat(KNOWN_SFC_EXTENSIONS)
+  const extensions = JS_EXTENSIONS
+    .concat(KNOWN_SFC_EXTENSIONS)
+    .concat(KNOWN_ASSET_TYPES)
+    .concat(KNOWN_CSS_TYPES)
   let config: ResolvedConfig
   let dynamicRequire: DynamicRequire
 

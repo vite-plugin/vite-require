@@ -4,8 +4,8 @@ import { type ResolvedConfig } from 'vite'
 import { TopScopeType, type Analyzed } from './analyze'
 import { type Resolved, Resolve } from './resolve'
 import { type Options } from './index'
-import { dynamicImportToGlob } from './dynamic-import-to-glob'
-import { MagicString } from './utils'
+import { dynamicImportToGlob } from 'vite-plugin-dynamic-import'
+import { MagicString, builtins } from './utils'
 import { type AcornNode } from './types'
 
 /**
@@ -48,7 +48,7 @@ export class DynamicRequire {
       const {
         node,
         ancestors,
-        isDynamicId,
+        dynamic,
         topScopeNode,
       } = statement
       counter++
@@ -59,8 +59,12 @@ export class DynamicRequire {
       const requireIdNode = node.arguments[0]
       if (!requireIdNode) continue // Not value - require()
       if (requireIdNode.type === 'Literal') {
-        requireId = requireId = requireIdNode.value
+        requireId = requireIdNode.value
+      } else if (dynamic === 'dynamic-like') {
+        requireId = requireIdNode.quasis[0].value.raw
       }
+
+      if (builtins.includes(requireId)) continue
 
       if (!requireId && topScopeNode) {
         const codeSnippets = analyzed.code.slice(node.start, node.end)
@@ -145,7 +149,7 @@ export class DynamicRequire {
           default:
             throw new Error(`Unknown TopScopeType: ${topScopeNode}`)
         }
-      } else if (isDynamicId) {
+      } else if (dynamic === 'dynamic') {
         let resolved: Resolved
         let glob = await dynamicImportToGlob(
           // `require` should have only one parameter

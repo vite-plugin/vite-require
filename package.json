@@ -1,6 +1,6 @@
 {
   "name": "vite-require",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Like Webpack's require",
   "main": "dist/index.js",
   "repository": {
@@ -15,7 +15,8 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "fast-glob": "^3.2.11"
+    "fast-glob": "^3.2.11",
+    "vite-plugin-dynamic-import": "^0.9.8"
   },
   "devDependencies": {
     "@types/node": "^17.0.36",

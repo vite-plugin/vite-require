@@ -7,6 +7,8 @@
 
 [English](https://github.com/vite-plugin/vite-require#readme) | 简体中文
 
+✅ dynamic-require `require('./foo/' + bar)`  
+
 ## 安装
 
 ```bash
@@ -15,11 +17,27 @@ npm i vite-require -D
 
 ## 使用
 
-```javascript
+```js
 import { viteRequire } from 'vite-require'
 export default {
   plugins: [
-    viteRequire()
+    viteRequire(/* options */)
   ]
+}
+```
+
+## API
+
+viteRequire([options])
+
+```ts
+export interface Options {
+  extensions?: string[]
+  filter?: (id: string) => false | void
+  /**
+   * When use the dynamic-require, this option will change `./*` to `./** /*`
+   * @default true
+   */
+  depth?: boolean
 }
 ```
