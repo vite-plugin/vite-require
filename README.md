@@ -7,7 +7,11 @@ Like Webpack's require
 
 English | [简体中文](https://github.com/vite-plugin/vite-require/blob/main/README.zh-CN.md)
 
-✅ dynamic-require `require('./foo/' + bar)`  
+✅ dynamic-require similar to 👉 [Webpack](https://webpack.js.org/guides/dependency-management/#require-with-expression) `require('./foo/' + bar)`
+
+📦 Out of the box  
+
+🔨 Work only in the `vite serve` phase  
 
 ## Install
 
@@ -34,10 +38,13 @@ viteRequire([options])
 export interface Options {
   extensions?: string[]
   filter?: (id: string) => false | void
-  /**
-   * When use the dynamic-require, this option will change `./*` to `./** /*`
-   * @default true
-   */
-  depth?: boolean
+  dynamic?: {
+    /**
+     * 1. `true` - Match all possibilities as much as possible, More like `webpack`
+     * 2. `false` - It behaves more like `@rollup/plugin-dynamic-import-vars`
+     * @default true
+     */
+    loose?: boolean
+  }
 }
 ```
