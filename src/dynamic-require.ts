@@ -173,7 +173,7 @@ export class DynamicRequire {
         if (!glob) return
 
         glob = tryFixGlobSlash(glob)
-        this.options.depth !== false && (glob = toDepthGlob(glob))
+        this.options.dynamic?.loose !== false && (glob = toDepthGlob(glob))
 
         let fileGlob: string
         if (glob.endsWith(this.EXT)) {
