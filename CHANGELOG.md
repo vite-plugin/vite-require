@@ -1,4 +1,10 @@
 
+## [2022-07-21] v0.2.0
+
+- d81dc3a test: v0.2.0
+- 1c78b01 feat: only import asset file default module
+- 7fd0c05 refactor: better logic
+
 ## [2022-06-27] v0.1.3
 
 - 898c179 docs: v0.1.3
