@@ -11,16 +11,15 @@ export enum TopScopeType {
 export interface RequireStatement {
   node: AcornNode
   ancestors: AcornNode[]
-  dynamic?:
-  | 'dynamic'
-  // e.g. (Literal-like)
-  //   require(`@/foo/bar.js`) 
-  | 'dynamic-like'
   /**
-   * If require statement located top-level scope and it is convertible, this will have a value(🎯-①)  
+   * If require statement located top-level scope ant it is convertible, this will have a value(🎯-①)  
    * 如果 require 在顶级作用于，并且是可转换 import 的，那么 topScopeNode 将会被赋值  
    */
   topScopeNode?: AcornNode & { type: TopScopeType }
+  dynamic?:
+  | 'dynamic'
+  // e.g. require(`@/foo/bar.js`) 
+  | 'Literal'
 }
 
 export interface Analyzed {
@@ -44,11 +43,15 @@ export function analyze(ast: AcornNode, code: string): Analyzed {
     CallExpression(node, ancestors) {
       if (node.callee.name !== 'require') return
 
+      const dynamic = checkDynamicId(node)
+
       analyzed.require.push({
         node,
         ancestors,
+        topScopeNode: dynamic === 'dynamic'
+          ? undefined
+          : findTopLevelScope(ancestors) as RequireStatement['topScopeNode'],
         dynamic: checkDynamicId(node),
-        topScopeNode: findTopLevelScope(ancestors) as RequireStatement['topScopeNode'],
       })
     },
     AssignmentExpression() {
@@ -60,16 +63,16 @@ export function analyze(ast: AcornNode, code: string): Analyzed {
 }
 
 function checkDynamicId(node: AcornNode): RequireStatement['dynamic'] {
-  // e.g. (Literal-like)
-  //   require(`@/foo/bar.js`) 
   if (
     node.arguments[0]?.type === 'TemplateLiteral' &&
     node.arguments[0]?.quasis.length === 1
   ) {
-    return 'dynamic-like'
+    // e.g. require(`@/foo/bar.js`)
+    return 'Literal'
   }
+
   // Only `require` with one-argument is supported
-  return node.arguments[0]?.type !== 'Literal' ? 'dynamic' : null
+  return node.arguments[0]?.type !== 'Literal' ? 'dynamic' : undefined
 }
 
 // At present, only the "MemberExpression" of the one-depth is considered as the top-level scope
