@@ -109,16 +109,13 @@ export class Resolve {
       const normalReplacement = normalizePath(replacement)
 
       // Resolve relative path for compatible restrict of '@rollup/plugin-dynamic-import-vars'
-      let relativePath = path.relative(
+      let relativePath = path.posix.relative(
         // Usually, the `replacement` we use is the directory path
         // So we also use the `path.dirname` path for calculation
         path.dirname(normalId),
         normalReplacement,
       )
 
-      // fix win && unix path sep
-      relativePath = relativePath.split(path.sep).join('/')
-      
       if (relativePath === '') {
         relativePath = '.'
       }
