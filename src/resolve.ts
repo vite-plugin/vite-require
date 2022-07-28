@@ -115,6 +115,10 @@ export class Resolve {
         path.dirname(normalId),
         normalReplacement,
       )
+
+      // fix win && unix path sep
+      relativePath = relativePath.split(path.sep).join('/')
+      
       if (relativePath === '') {
         relativePath = '.'
       }
