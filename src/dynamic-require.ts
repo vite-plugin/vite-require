@@ -2,28 +2,39 @@ import path from 'path'
 import fastGlob from 'fast-glob'
 import { type ResolvedConfig } from 'vite'
 import { TopScopeType, type Analyzed } from './analyze'
-import { type Resolved, Resolve } from './resolve'
 import { type Options } from './index'
-import { dynamicImportToGlob } from 'vite-plugin-dynamic-import'
-import { MagicString, builtins } from './utils'
+import { 
+  type Resolved,
+  dynamicImportToGlob,
+  Resolve,
+  utils,
+} from 'vite-plugin-dynamic-import'
+import { MagicString, builtins, KNOWN_ASSET_TYPES, KNOWN_CSS_TYPES } from './utils'
 import { type AcornNode } from './types'
+
+const {
+  normallyImporteeRE,
+  tryFixGlobSlash,
+  toDepthGlob,
+  mappingPath,
+} = utils
 
 /**
  * ```
- * At present, divide `require` into three cases
- * 目前，将 require() 分为三种情况
+ * At present, divide `require(id: Literal)` into three cases
+ * 目前，将 `require(id: Literal)` 分为三种情况
  * 
- * ①:
- * In the top-level scope and can be converted to `import` directly (🎯-①)
+ * ①(🎯)
+ * In the top-level scope and can be converted to `import` directly
  * 在顶层作用域，并且直接转换成 import
  * 
- * ②:
- * If the `id` in `require(id)` is a literal string, the `require` statement will be promoted to the top-level scope and become an `import` statement (🚧-①)
- * 如果 require(id) 中的 id 是字面量字符串，require 语句将会被提升到顶级作用域，变成 import 语句
+ * ②(🚧)
+ * If the `id` in `require(id: Literal)` is a literal string, the `require` statement will be promoted to the top-level scope and become an `import` statement
+ * 如果 require(id: Literal) 中的 id 是字面量字符串，require 语句将会被提升到顶级作用域，变成 import 语句
  * 
- * ③:
- * If the `id` in `require(id)` is a dynamic-id, the `require` statement will be converted to `__matchRequireRuntime` function (🚧-②)
- * 如果 require(id) 中的 id 动态 id，require 语句将会被转换成 __matchRequireRuntime 函数
+ * ③(🚧)
+ * If the `id` in `require(dynamic-id)` is a dynamic-id, the `require` statement will be converted to `__matchRequireRuntime` function
+ * 如果 require(dynamic-id) 中的 id 动态 id，require 语句将会被转换成 __matchRequireRuntime 函数
  * ```
  */
 
@@ -60,13 +71,13 @@ export class DynamicRequire {
       if (!requireIdNode) continue // Not value - require()
       if (requireIdNode.type === 'Literal') {
         requireId = requireIdNode.value
-      } else if (dynamic === 'dynamic-like') {
+      } else if (dynamic === 'Literal') {
         requireId = requireIdNode.quasis[0].value.raw
       }
 
       if (builtins.includes(requireId)) continue
 
-      if (!requireId && topScopeNode) {
+      if (!requireId && dynamic !== 'dynamic') {
         const codeSnippets = analyzed.code.slice(node.start, node.end)
         throw new Error(`The following require statement cannot be converted.
       -> ${codeSnippets}
@@ -74,6 +85,8 @@ export class DynamicRequire {
       }
 
       if (topScopeNode) {
+        // ①(🎯)
+
         let imptStatement = ''
         let declaration = '' // `declaration` used to merge import
 
@@ -109,13 +122,12 @@ export class DynamicRequire {
             if (init.type === 'CallExpression') {
               if (typeof LV === 'string') {
                 // const acorn = require('acorn')
-                imptStatement = `import * as ${LV} from '${requireId}'`
+                imptStatement = this.generatedImportAs(LV, requireId) // `import * as ${LV} from '${requireId}'`
               } else {
                 // const { parse } = require('acorn')
                 imptStatement = `import { ${LV_str('as')} } from '${requireId}'`
               }
             } else if (init.type === 'MemberExpression') {
-              // 🚧-②
               const onlyOneMember = ancestors.find(an => an.type === 'MemberExpression').property.name
               const importDefault = onlyOneMember === 'default'
               if (typeof LV === 'string') {
@@ -150,6 +162,8 @@ export class DynamicRequire {
             throw new Error(`Unknown TopScopeType: ${topScopeNode}`)
         }
       } else if (dynamic === 'dynamic') {
+        // ③(🚧)
+
         let resolved: Resolved
         let glob = await dynamicImportToGlob(
           // `require` should have only one parameter
@@ -171,6 +185,7 @@ export class DynamicRequire {
           },
         )
         if (!glob) return
+        // TODO: normallyImporteeRE
 
         glob = tryFixGlobSlash(glob)
         this.options.dynamic?.loose !== false && (glob = toDepthGlob(glob))
@@ -192,27 +207,11 @@ export class DynamicRequire {
 
         if (!paths.length) continue
 
-        const entries: Record</* localFilename */string, /* Array<possible importee> */string[]> = {}
-        for (const p of paths) {
-          let importee = p
-          if (resolved) {
-            const static1 = resolved.import.importee.slice(0, resolved.import.importee.indexOf('*'))
-            const static2 = resolved.import.resolved.slice(0, resolved.import.resolved.indexOf('*'))
-            // Recovery alias `./views/*` -> `@/views/*`
-            importee = p.replace(static2, static1)
-          }
-          const ext = path.extname(importee)
-
-          entries[p] = [importee.replace(ext, ''), importee]
-          if (importee.endsWith(`/index${ext}`)) {
-            entries[p].unshift(importee.replace(`/index${ext}`, ''))
-          }
-        }
-
+        const maps = mappingPath(paths, resolved)
         const runtimeFnName = `__matchRequireRuntime${counter}__`
         let counter2 = 0
         const cases: string[] = []
-        for (const [localFile, importeeList] of Object.entries(entries)) {
+        for (const [localFile, importeeList] of Object.entries(maps)) {
           let dynamic_require2import: string
           const cache = importCache.get(localFile)
           if (cache) {
@@ -220,7 +219,7 @@ export class DynamicRequire {
           } else {
             dynamic_require2import = `__dynamic_require2import__${counter}__${counter2++}`
             importCache.set(localFile, dynamic_require2import)
-            promotionImports.push(`import * as ${dynamic_require2import} from '${localFile}'`)
+            promotionImports.push(this.generatedImportAs(dynamic_require2import, localFile))
           }
           cases.push(importeeList
             .map(importee => `    case '${importee}':`)
@@ -235,7 +234,9 @@ ${cases.join('\n')}
   }
 }`)
       } else {
-        promotionImports.push(`import * as ${require2import} from '${requireId}'`)
+        // ②(🚧)
+
+        promotionImports.push(this.generatedImportAs(require2import, requireId))
         ms.overwrite(node.start, node.end, require2import)
       }
     }
@@ -258,20 +259,14 @@ ${cases.join('\n')}
     const str = ms.toString()
     return str === code ? null : str
   }
-}
 
-// In some cases, glob may not be available
-// e.g. (fill necessary slash)
-//   `./foo*` -> `./foo/*`
-//   `./foo*.js` -> `./foo/*.js`
-function tryFixGlobSlash(glob: string): string {
-  return glob.replace(/(?<![\*\/])(\*)/g, '/$1')
-}
-
-// Match as far as possible
-// e.g.
-//   `./foo/*` -> `./foo/**/*`
-//   `./foo/*.js` -> `./foo/**/*.js`
-function toDepthGlob(glob: string): string {
-  return glob.replace(/^(.*)\/\*(?!\*)/, '$1/**/*')
+  /**
+   * If importee ends in a asset file, it might be better to just import the default module.
+   */
+   private generatedImportAs(moduleName: string, importee: string) {
+    if (KNOWN_ASSET_TYPES.concat(KNOWN_CSS_TYPES).find(e => importee.endsWith(e))) {
+      return `import ${moduleName} from '${importee}'`
+    }
+    return `import * as ${moduleName} from '${importee}'`
+  }
 }
