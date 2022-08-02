@@ -2,9 +2,13 @@ import path from 'path'
 import fastGlob from 'fast-glob'
 import { type ResolvedConfig } from 'vite'
 import { TopScopeType, type Analyzed } from './analyze'
-import { type Resolved, Resolve } from './resolve'
 import { type Options } from './index'
-import { dynamicImportToGlob, utils } from 'vite-plugin-dynamic-import'
+import { 
+  type Resolved,
+  dynamicImportToGlob,
+  Resolve,
+  utils,
+} from 'vite-plugin-dynamic-import'
 import { MagicString, builtins, KNOWN_ASSET_TYPES, KNOWN_CSS_TYPES } from './utils'
 import { type AcornNode } from './types'
 
