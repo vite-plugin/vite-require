@@ -5,7 +5,7 @@ import { TopScopeType, type Analyzed } from './analyze'
 import { type Resolved, Resolve } from './resolve'
 import { type Options } from './index'
 import { dynamicImportToGlob, utils } from 'vite-plugin-dynamic-import'
-import { MagicString, builtins } from './utils'
+import { MagicString, builtins, KNOWN_ASSET_TYPES, KNOWN_CSS_TYPES } from './utils'
 import { type AcornNode } from './types'
 
 const {
@@ -118,7 +118,7 @@ export class DynamicRequire {
             if (init.type === 'CallExpression') {
               if (typeof LV === 'string') {
                 // const acorn = require('acorn')
-                imptStatement = `import * as ${LV} from '${requireId}'`
+                imptStatement = this.generatedImportAs(LV, requireId) // `import * as ${LV} from '${requireId}'`
               } else {
                 // const { parse } = require('acorn')
                 imptStatement = `import { ${LV_str('as')} } from '${requireId}'`
@@ -204,7 +204,6 @@ export class DynamicRequire {
         if (!paths.length) continue
 
         const maps = mappingPath(paths, resolved)
-
         const runtimeFnName = `__matchRequireRuntime${counter}__`
         let counter2 = 0
         const cases: string[] = []
@@ -216,7 +215,7 @@ export class DynamicRequire {
           } else {
             dynamic_require2import = `__dynamic_require2import__${counter}__${counter2++}`
             importCache.set(localFile, dynamic_require2import)
-            promotionImports.push(`import * as ${dynamic_require2import} from '${localFile}'`)
+            promotionImports.push(this.generatedImportAs(dynamic_require2import, localFile))
           }
           cases.push(importeeList
             .map(importee => `    case '${importee}':`)
@@ -233,7 +232,7 @@ ${cases.join('\n')}
       } else {
         // ②(🚧)
 
-        promotionImports.push(`import * as ${require2import} from '${requireId}'`)
+        promotionImports.push(this.generatedImportAs(require2import, requireId))
         ms.overwrite(node.start, node.end, require2import)
       }
     }
@@ -255,5 +254,15 @@ ${cases.join('\n')}
 
     const str = ms.toString()
     return str === code ? null : str
+  }
+
+  /**
+   * If importee ends in a asset file, it might be better to just import the default module.
+   */
+   private generatedImportAs(moduleName: string, importee: string) {
+    if (KNOWN_ASSET_TYPES.concat(KNOWN_CSS_TYPES).find(e => importee.endsWith(e))) {
+      return `import ${moduleName} from '${importee}'`
+    }
+    return `import * as ${moduleName} from '${importee}'`
   }
 }
