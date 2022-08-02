@@ -1,4 +1,12 @@
 
+## [2022-08-02] v0.2.1
+
+fix(🐞): Windows slash path
+
+- last commit 7f53465
+- PR: #6
+
+
 ## [2022-08-02] v0.2.0
 
 - d81dc3a test: v0.2.0
