@@ -1,4 +1,8 @@
 
+## [2022-08-03] v0.2.2
+
+fix(🐞):filter builtinModules
+
 ## [2022-08-02] v0.2.1
 
 fix(🐞): Windows slash path
