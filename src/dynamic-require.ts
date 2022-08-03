@@ -261,11 +261,7 @@ ${cases.join('\n')}
   /**
    * If importee ends in a asset file, it might be better to just import the default module.
    */
-<<<<<<< HEAD
   private generatedImportAs(moduleName: string, importee: string) {
-=======
-   private generatedImportAs(moduleName: string, importee: string) {
->>>>>>> ddaeb5cb424bf3473d1260752334d6b408357e90
     if (KNOWN_ASSET_TYPES.concat(KNOWN_CSS_TYPES).find(e => importee.endsWith(e))) {
       return `import ${moduleName} from '${importee}'`
     }

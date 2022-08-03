@@ -48,17 +48,10 @@ export function analyze(ast: AcornNode, code: string): Analyzed {
       analyzed.require.push({
         node,
         ancestors,
-<<<<<<< HEAD
         topScopeNode: dynamic === 'dynamic'
           ? undefined
           : findTopLevelScope(ancestors) as RequireStatement['topScopeNode'],
-        dynamic: checkDynamicId(node),
-=======
-        topScopeNode: dynamic === 'dynamic' 
-          ? undefined 
-          : findTopLevelScope(ancestors) as RequireStatement['topScopeNode'],
         dynamic,
->>>>>>> ddaeb5cb424bf3473d1260752334d6b408357e90
       })
     },
     AssignmentExpression() {
