@@ -3,21 +3,15 @@ import fastGlob from 'fast-glob'
 import { type ResolvedConfig } from 'vite'
 import { TopScopeType, type Analyzed } from './analyze'
 import { type Options } from './index'
-import { 
+import {
   type Resolved,
   dynamicImportToGlob,
   Resolve,
-  utils,
+  toLooseGlob,
+  mappingPath,
 } from 'vite-plugin-dynamic-import'
 import { MagicString, builtins, KNOWN_ASSET_TYPES, KNOWN_CSS_TYPES } from './utils'
 import { type AcornNode } from './types'
-
-const {
-  normallyImporteeRE,
-  tryFixGlobSlash,
-  toDepthGlob,
-  mappingPath,
-} = utils
 
 /**
  * ```
@@ -187,8 +181,12 @@ export class DynamicRequire {
         if (!glob) return
         // TODO: normallyImporteeRE
 
-        glob = tryFixGlobSlash(glob)
-        this.options.dynamic?.loose !== false && (glob = toDepthGlob(glob))
+        if (this.options.dynamic?.loose !== false) {
+          const tmp: string | string[] = toLooseGlob(glob)
+
+          // TODO: support Array(vite-plugin-dynamic-import)
+          glob = Array.isArray(tmp) ? tmp[0] : tmp
+        }
 
         let fileGlob: string
         if (glob.endsWith(this.EXT)) {
