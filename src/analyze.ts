@@ -12,10 +12,10 @@ export interface RequireStatement {
   node: AcornNode
   ancestors: AcornNode[]
   /**
-   * If require statement located top-level scope and it is convertible, this will have a value(🎯-①)  
+   * If require statement located top-level scope ant it is convertible, this will have a value(🎯-①)  
    * 如果 require 在顶级作用于，并且是可转换 import 的，那么 topScopeNode 将会被赋值  
    */
-  topScopeNode?: AcornNode & { type: TopScopeType },
+  topScopeNode?: AcornNode & { type: TopScopeType }
   dynamic?:
   | 'dynamic'
   // e.g. require(`@/foo/bar.js`) 
@@ -48,8 +48,8 @@ export function analyze(ast: AcornNode, code: string): Analyzed {
       analyzed.require.push({
         node,
         ancestors,
-        topScopeNode: dynamic === 'dynamic' 
-          ? undefined 
+        topScopeNode: dynamic === 'dynamic'
+          ? undefined
           : findTopLevelScope(ancestors) as RequireStatement['topScopeNode'],
         dynamic,
       })
