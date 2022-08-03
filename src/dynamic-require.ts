@@ -2,9 +2,13 @@ import path from 'path'
 import fastGlob from 'fast-glob'
 import { type ResolvedConfig } from 'vite'
 import { TopScopeType, type Analyzed } from './analyze'
-import { type Resolved, Resolve } from './resolve'
 import { type Options } from './index'
-import { dynamicImportToGlob, utils } from 'vite-plugin-dynamic-import'
+import { 
+  type Resolved,
+  dynamicImportToGlob,
+  Resolve,
+  utils,
+} from 'vite-plugin-dynamic-import'
 import { MagicString, builtins, KNOWN_ASSET_TYPES, KNOWN_CSS_TYPES } from './utils'
 import { type AcornNode } from './types'
 
@@ -18,7 +22,7 @@ const {
 /**
  * ```
  * At present, divide `require(id: Literal)` into three cases
- * 目前，将 require() 分为三种情况
+ * 目前，将 `require(id: Literal)` 分为三种情况
  * 
  * ①(🎯)
  * In the top-level scope and can be converted to `import` directly
@@ -259,7 +263,11 @@ ${cases.join('\n')}
   /**
    * If importee ends in a asset file, it might be better to just import the default module.
    */
+<<<<<<< HEAD
   private generatedImportAs(moduleName: string, importee: string) {
+=======
+   private generatedImportAs(moduleName: string, importee: string) {
+>>>>>>> ddaeb5cb424bf3473d1260752334d6b408357e90
     if (KNOWN_ASSET_TYPES.concat(KNOWN_CSS_TYPES).find(e => importee.endsWith(e))) {
       return `import ${moduleName} from '${importee}'`
     }

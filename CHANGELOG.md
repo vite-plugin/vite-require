@@ -1,5 +1,16 @@
 
-## [2022-07-21] v0.2.0
+## [2022-08-03] v0.2.2
+
+fix(🐞): filter builtinModules
+
+## [2022-08-02] v0.2.1
+
+fix(🐞): Windows slash path
+
+- last commit 7f53465
+- PR: #6
+
+## [2022-08-02] v0.2.0
 
 - d81dc3a test: v0.2.0
 - 1c78b01 feat: only import asset file default module

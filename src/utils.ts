@@ -69,8 +69,8 @@ export const KNOWN_CSS_TYPES = [
   'postcss',
 ]
 export const builtins = [
-  ...builtinModules.map(m => !m.startsWith('_')),
-  ...builtinModules.map(m => !m.startsWith('_')).map(m => `node:${m}`)
+  ...builtinModules.filter(m => !m.startsWith('_')),
+  ...builtinModules.filter(m => !m.startsWith('_')).map(m => `node:${m}`)
 ]
 
 // ------------------------------------------------- function
