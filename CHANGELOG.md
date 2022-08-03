@@ -1,7 +1,8 @@
 
 ## [2022-08-03] v0.2.2
 
-fix(🐞): filter builtinModules
+- fix(🐞): filter builtinModules (98ada26)
+- fix(🐞): `toLooseGlob()` instead `toDepthGlob()` (81fa6ec) #7
 
 ## [2022-08-02] v0.2.1
 
