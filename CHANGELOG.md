@@ -1,4 +1,8 @@
 
+## [2022-08-04] v0.2.3
+
+- b354e30 chore(enhance): better glob
+
 ## [2022-08-03] v0.2.2
 
 - fix(🐞): filter builtinModules (98ada26)
