@@ -159,27 +159,40 @@ export class DynamicRequire {
         // ③(🚧)
 
         let resolved: Resolved
+        const PAHT_FILL = '####/'
+        const EXT_FILL = '.extension'
+        let globRaw: string
         let glob = await dynamicImportToGlob(
           // `require` should have only one parameter
           node.arguments[0],
           code.slice(node.start, node.end),
-          async (_glob) => {
-            // It's relative or absolute path
-            if (/^[\.\/]/.test(_glob)) {
-              return
+          async (raw) => {
+            globRaw = raw
+            resolved = await this.resolve.tryResolve(raw, importer)
+            if (resolved) {
+              raw = resolved.import.resolved
             }
-
-            resolved = await this.resolve.tryResolve(_glob, importer)
-            if (!resolved) return
-
-            _glob = resolved.import.resolved
-
-            // EXT for bypass restrict
-            return path.extname(_glob) ? _glob : _glob + this.EXT
+            if (!path.extname(raw)) {
+              // Bypass extension restrict
+              raw = raw + EXT_FILL
+            }
+            if (/^\.\/\*\.\w+$/.test(raw)) {
+              // Bypass ownDirectoryStarExtension (./*.ext)
+              raw = raw.replace('./*', `./${PAHT_FILL}*`)
+            }
+            return raw
           },
         )
-        if (!glob) return
-        // TODO: normallyImporteeRE
+        if (!glob) {
+
+          // TODO: normallyImporteeRE
+
+          // if (normallyImporteeRE.test(globRaw)) {
+          //   normally = globRaw
+          //   return { normally }
+          // }
+          return
+        }
 
         if (this.options.dynamic?.loose !== false) {
           const tmp: string | string[] = toLooseGlob(glob)
@@ -188,24 +201,32 @@ export class DynamicRequire {
           glob = Array.isArray(tmp) ? tmp[0] : tmp
         }
 
-        let fileGlob: string
-        if (glob.endsWith(this.EXT)) {
-          glob = glob.replace(this.EXT, '')
-          // If not ext is not specified, fill necessary extensions
-          // e.g.
-          //   `./foo/*` -> `./foo/*.{js,ts,vue,...}`
-          fileGlob = glob + `.{${this.options.extensions.map(e => e.replace(/^\./, '')).join(',')}}`
-        } else {
-          fileGlob = glob
-        }
+        const globs = [].concat(this.options.dynamic?.loose !== false ? toLooseGlob(glob) : glob)
+          .map(g => {
+            g.includes(PAHT_FILL) && (g = g.replace(PAHT_FILL, ''))
+            g.endsWith(EXT_FILL) && (g = g.replace(EXT_FILL, ''))
+            return g
+          })
+        const fileGlobs = globs
+          .map(g => path.extname(g)
+            ? g
+            // If not ext is not specified, fill necessary extensions
+            // e.g.
+            //   `./foo/*` -> `./foo/*.{js,ts,vue,...}`
+            : g + `.{${this.options.extensions.map(e => e.replace(/^\./, '')).join(',')}}`
+          )
 
-        const result = fastGlob.sync(fileGlob, { cwd: path.dirname(importer) })
-        let paths = result.map(file => !file.startsWith('.') ? `./${file}` : file)
+        const result = fastGlob.sync(fileGlobs, { cwd: path.dirname(importer) })
+        let files = result.map(file => !file.startsWith('.') ? `./${file}` : file)
+
+        // skip itself
+        files = files.filter(f => path.join(path.dirname(importer), f) !== importer)
+
         // TODO: execute the Options.onFiles
 
-        if (!paths.length) continue
+        if (!files.length) continue
 
-        const maps = mappingPath(paths, resolved)
+        const maps = mappingPath(files, resolved)
         const runtimeFnName = `__matchRequireRuntime${counter}__`
         let counter2 = 0
         const cases: string[] = []
